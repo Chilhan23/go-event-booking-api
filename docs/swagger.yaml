@@ -1,0 +1,291 @@
+basePath: /
+definitions:
+  auth.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/auth.UserResponse'
+    type: object
+  auth.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  auth.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  events.CreateEventRequest:
+    properties:
+      description:
+        type: string
+      ends_at:
+        type: string
+      location:
+        minLength: 3
+        type: string
+      quota:
+        minimum: 1
+        type: integer
+      starts_at:
+        type: string
+      title:
+        minLength: 3
+        type: string
+    required:
+    - ends_at
+    - location
+    - quota
+    - starts_at
+    - title
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: High-performance Event Management & Concurrency-Safe Ticket Booking
+    REST API in Go.
+  title: Event Booking REST API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return signed JWT bearer token
+      parameters:
+      - description: User Login Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful with JWT token
+          schema:
+            $ref: '#/definitions/auth.AuthResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account with username, email, and password
+      parameters:
+      - description: User Registration Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Registration successful
+          schema:
+            $ref: '#/definitions/auth.UserResponse'
+        "400":
+          description: Validation error or username/email taken
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Auth
+  /events:
+    get:
+      description: Retrieve a list of all available events
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of events
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Database error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all events
+      tags:
+      - Events
+  /events/{id}:
+    get:
+      description: Retrieve detailed information for a single event
+      parameters:
+      - description: Event UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Event not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get event by ID
+      tags:
+      - Events
+  /events/{id}/book:
+    post:
+      description: Reserve a ticket for an event with row-level lock concurrency safety
+        (Requires JWT Authentication)
+      parameters:
+      - description: Event UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Event booked successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Event fully booked or already booked by user
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Book an event ticket
+      tags:
+      - Bookings
+  /events/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new event with schedule and seat quota (Requires JWT Authentication)
+      parameters:
+      - description: Event Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/events.CreateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Event created successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Validation error or invalid schedule
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new event
+      tags:
+      - Events
+  /me/bookings:
+    get:
+      description: Retrieve list of all tickets booked by the currently authenticated
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User booking history
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Database error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user booking history
+      tags:
+      - Bookings
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

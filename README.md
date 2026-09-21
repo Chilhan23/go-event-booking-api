@@ -12,6 +12,7 @@ A high-performance, production-ready RESTful Event Management and Ticket Booking
 - **Duplicate Booking Prevention:** Enforced at the database engine level via composite `UNIQUE(event_id, user_id)` constraints.
 - **Context & Cancellation Propagation:** Request contexts (`c.Request.Context()`) are forwarded across handlers, services, and repositories to prevent orphan queries upon client disconnection.
 - **Clean Layer Separation:** Strict decoupling between network contracts (DTOs) and database schemas (Models) to prevent sensitive data leakage.
+- **Interactive Swagger Documentation:** Auto-generated OpenAPI / Swagger UI accessible directly at the root `/` endpoint (or `/swagger/index.html`) with interactive JWT Bearer authorization testing.
 - **Database Migrations:** Automated schema versioning and DDL migrations managed via `golang-migrate` and custom helper scripts.
 
 ---
@@ -24,6 +25,7 @@ A high-performance, production-ready RESTful Event Management and Ticket Booking
 - **ORM:** [GORM](https://gorm.io)
 - **Authentication:** JWT (`github.com/golang-jwt/jwt/v5`) & bcrypt (`golang.org/x/crypto/bcrypt`)
 - **Migrations:** [golang-migrate](https://github.com/golang-migrate/migrate)
+- **API Documentation:** [Swagger / swaggo](https://github.com/swaggo/swag) & [gin-swagger](https://github.com/swaggo/gin-swagger)
 - **Hot Reload:** [Air](https://github.com/air-verse/air)
 
 ---
@@ -264,6 +266,7 @@ go run scripts/test_concurrency.go
 - [x] Duplicate Booking Prevention (`UNIQUE` Constraints)
 - [x] User Booking History (`GET /me/bookings`)
 - [x] Concurrency & Race Condition Simulation Testing
+- [x] Interactive Swagger 2.0 API Docs (`/` & `/swagger/index.html`)
 
 ---
 

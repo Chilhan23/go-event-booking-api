@@ -2,17 +2,30 @@ package main
 
 import (
 	"log"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "example.com/event-app/docs"
+	"example.com/event-app/internal/auth"
+	"example.com/event-app/internal/booking"
 	"example.com/event-app/internal/config"
 	"example.com/event-app/internal/database"
-	"example.com/event-app/internal/auth"
-    "example.com/event-app/internal/events"
-    "example.com/event-app/internal/middleware"
-	"example.com/event-app/internal/booking"
-
+	"example.com/event-app/internal/events"
+	"example.com/event-app/internal/middleware"
 )
 
-
+// @title Event Booking REST API
+// @version 1.0
+// @description High-performance Event Management & Concurrency-Safe Ticket Booking REST API in Go.
+// @host localhost:8080
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func main() {
     // 1. Load application configuration
     cfg, err := config.Load()
@@ -65,7 +78,13 @@ func main() {
         protected.GET("/me/bookings", bookingHandler.GetMyBookings)
     }
 
-    // 7. Start HTTP server
+    // 7. Swagger Documentation & Root Route
+    router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    router.GET("/", func(c *gin.Context) {
+        c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+    })
+
+    // 8. Start HTTP server
     router.Run(":" + cfg.Port)
 }
 

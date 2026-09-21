@@ -17,6 +17,15 @@ func NewHandler(service Service) *Handler {
 
 
 // Register handles HTTP user registration requests
+// @Summary Register a new user
+// @Description Register a new user account with username, email, and password
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body RegisterRequest true "User Registration Credentials"
+// @Success 201 {object} UserResponse "Registration successful"
+// @Failure 400 {object} map[string]string "Validation error or username/email taken"
+// @Router /auth/register [post]
 func (h *Handler) Register(c *gin.Context) {
 	var req RegisterRequest
 
@@ -42,6 +51,16 @@ func (h *Handler) Register(c *gin.Context) {
 }
 
 // Login handles HTTP user authentication requests
+// @Summary Login user
+// @Description Authenticate user and return signed JWT bearer token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body LoginRequest true "User Login Credentials"
+// @Success 200 {object} AuthResponse "Login successful with JWT token"
+// @Failure 400 {object} map[string]string "Invalid request body"
+// @Failure 401 {object} map[string]string "Invalid credentials"
+// @Router /auth/login [post]
 func (h *Handler) Login(c *gin.Context) {
 	var req LoginRequest
 
