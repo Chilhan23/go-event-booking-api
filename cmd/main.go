@@ -6,6 +6,9 @@ import (
 	"example.com/event-app/internal/config"
 	"example.com/event-app/internal/database"
 	"example.com/event-app/internal/auth"
+    "example.com/event-app/internal/events"
+    "example.com/event-app/internal/middleware"
+
 )
 
 
@@ -36,6 +39,23 @@ func main() {
         authRoutes.POST("/register", authHandler.Register)
         authRoutes.POST("/login", authHandler.Login)
     }
+
+	// 1. Wiring Layer Events
+    eventRepo := events.NewRepository(db)
+    eventService := events.NewService(eventRepo)
+    eventHandler := events.NewHandler(eventService)
+
+    // 2. Public Event Routes (Melihat Event)
+    router.GET("/events", eventHandler.GetAll)
+    router.GET("/events/:id", eventHandler.GetByID)
+
+    // 3. Protected Routes (Membuat Event Wajib Login)
+    protected := router.Group("/")
+    protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+    {
+        protected.POST("/events/create", eventHandler.Create)
+    }
+
 
     // 5. Start HTTP server
     router.Run(":" + cfg.Port)
