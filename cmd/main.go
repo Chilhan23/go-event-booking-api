@@ -8,6 +8,7 @@ import (
 	"example.com/event-app/internal/auth"
     "example.com/event-app/internal/events"
     "example.com/event-app/internal/middleware"
+	"example.com/event-app/internal/booking"
 
 )
 
@@ -29,35 +30,42 @@ func main() {
     // 3. Setup router & dependencies
     router := gin.Default()
 
+    // 1. Wiring Auth Layer
     authRepo := auth.NewRepository(db)
     authService := auth.NewService(authRepo, cfg.JWTSecret)
     authHandler := auth.NewHandler(authService)
 
-    // 4. Register routes
+    // 2. Wiring Events Layer
+    eventRepo := events.NewRepository(db)
+    eventService := events.NewService(eventRepo)
+    eventHandler := events.NewHandler(eventService)
+
+    // 3. Wiring Booking Layer
+    bookingRepo := booking.NewRepository(db)
+    bookingService := booking.NewService(bookingRepo)
+    bookingHandler := booking.NewHandler(bookingService)
+
+    // 4. Public Auth Routes
     authRoutes := router.Group("/auth")
     {
         authRoutes.POST("/register", authHandler.Register)
         authRoutes.POST("/login", authHandler.Login)
     }
 
-	// 1. Wiring Layer Events
-    eventRepo := events.NewRepository(db)
-    eventService := events.NewService(eventRepo)
-    eventHandler := events.NewHandler(eventService)
-
-    // 2. Public Event Routes (Melihat Event)
+    // 5. Public Event Routes
     router.GET("/events", eventHandler.GetAll)
     router.GET("/events/:id", eventHandler.GetByID)
 
-    // 3. Protected Routes (Membuat Event Wajib Login)
+    // 6. Protected Routes (Requires JWT Authentication)
     protected := router.Group("/")
     protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
     {
         protected.POST("/events/create", eventHandler.Create)
+        protected.POST("/events/:id/book", bookingHandler.Book)
+        protected.GET("/me/bookings", bookingHandler.GetMyBookings)
     }
 
-
-    // 5. Start HTTP server
+    // 7. Start HTTP server
     router.Run(":" + cfg.Port)
 }
 

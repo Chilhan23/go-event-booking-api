@@ -62,7 +62,8 @@ A high-performance, production-ready RESTful Event Management and Ticket Booking
 │       └── dto.go                   # Booking request & response DTOs
 ├── migrations/                      # Versioned SQL migration files (.up.sql & .down.sql)
 ├── scripts/
-│   └── migrate.sh                   # Helper script for migration operations
+│   ├── migrate.sh                   # Helper script for migration operations
+│   └── test_concurrency.go          # Concurrent load test simulation for race conditions
 ├── .air.toml                        # Air hot reload configuration
 ├── .env                             # Environment variables
 ├── go.mod
@@ -100,6 +101,21 @@ Manage database schemas using the migration script:
 # Create a new migration file
 ./scripts/migrate.sh create <migration_name>
 ```
+
+---
+
+## Concurrency & Race Condition Testing
+
+A simulation script is included to test concurrent booking requests and verify that PostgreSQL row-level locking (`SELECT FOR UPDATE`) strictly prevents overbooking:
+
+```bash
+go run scripts/test_concurrency.go
+```
+
+**Simulation behavior:**
+- Creates an event with a limited quota (e.g. 5 seats).
+- Launches 20 concurrent goroutines firing booking requests at the exact same millisecond.
+- Verifies that exactly 5 bookings succeed (`201 Created`) and remaining 15 requests are safely rejected (`Quota Exhausted`).
 
 ---
 
@@ -170,7 +186,7 @@ Manage database schemas using the migration script:
 {
   "title": "Go Concurrency & Backend Masterclass",
   "description": "Deep dive into goroutines, channels, and row-level locking.",
-  "location": "Jakarta Convention Center",
+  "location": "Jakarta Stadium",
   "starts_at": "2026-10-01T09:00:00Z",
   "ends_at": "2026-10-01T17:00:00Z",
   "quota": 100
@@ -183,7 +199,7 @@ Manage database schemas using the migration script:
     "id": "8f2b3e41-012a-43e8-a321-c0841707b119",
     "title": "Go Concurrency & Backend Masterclass",
     "description": "Deep dive into goroutines, channels, and row-level locking.",
-    "location": "Jakarta Convention Center",
+    "location": "Jakarta Stadium",
     "starts_at": "2026-10-01T09:00:00Z",
     "ends_at": "2026-10-01T17:00:00Z",
     "quota": 100,
@@ -194,12 +210,44 @@ Manage database schemas using the migration script:
 
 ---
 
-### Bookings (Upcoming)
+### Bookings
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `POST` | `/events/:id/book` | JWT | Book a seat for an event (Race-condition safe) |
+| `POST` | `/events/:id/book` | JWT | Book a ticket for an event (Race-condition safe) |
 | `GET`  | `/me/bookings`     | JWT | Retrieve all bookings for the logged-in user |
+
+#### `POST /events/:id/book`
+```json
+// Headers: Authorization: Bearer <token>
+// Response (201 Created)
+{
+  "message": "event booked successfully",
+  "data": {
+    "id": "2c943e11-884a-4ecb-99f1-d0831707c220",
+    "event_id": "8f2b3e41-012a-43e8-a321-c0841707b119",
+    "user_id": "5b676171-999a-4d62-8506-c0841707b118",
+    "created_at": "2026-09-21T11:00:00Z"
+  }
+}
+```
+
+#### `GET /me/bookings`
+```json
+// Headers: Authorization: Bearer <token>
+// Response (200 OK)
+{
+  "message": "user bookings retrieved successfully",
+  "data": [
+    {
+      "id": "2c943e11-884a-4ecb-99f1-d0831707c220",
+      "event_id": "8f2b3e41-012a-43e8-a321-c0841707b119",
+      "user_id": "5b676171-999a-4d62-8506-c0841707b118",
+      "created_at": "2026-09-21T11:00:00Z"
+    }
+  ]
+}
+```
 
 ---
 
@@ -212,9 +260,10 @@ Manage database schemas using the migration script:
 - [x] User Authentication & Authorization (Bcrypt + JWT)
 - [x] JWT Auth Middleware Protection
 - [x] Event Management Domain (CRUD Operations)
-- [ ] Concurrency-Safe Booking Engine (`SELECT FOR UPDATE`)
-- [ ] User Booking History & Cancellation
-- [ ] Goroutine & Channel Async Processing
+- [x] Concurrency-Safe Booking Engine (`SELECT FOR UPDATE` + Transactions)
+- [x] Duplicate Booking Prevention (`UNIQUE` Constraints)
+- [x] User Booking History (`GET /me/bookings`)
+- [x] Concurrency & Race Condition Simulation Testing
 
 ---
 
