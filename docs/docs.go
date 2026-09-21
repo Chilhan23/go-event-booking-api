@@ -43,25 +43,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Login successful with JWT token",
                         "schema": {
-                            "$ref": "#/definitions/auth.AuthResponse"
+                            "$ref": "#/definitions/auth.LoginSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/auth.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid credentials",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/auth.ErrorResponse"
                         }
                     }
                 }
@@ -95,16 +89,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Registration successful",
                         "schema": {
-                            "$ref": "#/definitions/auth.UserResponse"
+                            "$ref": "#/definitions/auth.RegisterSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error or username/email taken",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/auth.ErrorResponse"
                         }
                     }
                 }
@@ -124,17 +115,13 @@ const docTemplate = `{
                     "200": {
                         "description": "List of events",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/events.EventsListResponse"
                         }
                     },
                     "400": {
                         "description": "Database error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/events.ErrorResponse"
                         }
                     }
                 }
@@ -173,26 +160,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Event created successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/events.EventSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error or invalid schedule",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/events.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/events.ErrorResponse"
                         }
                     }
                 }
@@ -221,17 +201,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Event details",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/events.EventSuccessResponse"
                         }
                     },
                     "404": {
                         "description": "Event not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/events.ErrorResponse"
                         }
                     }
                 }
@@ -265,26 +241,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Event booked successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/booking.BookingSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Event fully booked or already booked by user",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/booking.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/booking.ErrorResponse"
                         }
                     }
                 }
@@ -309,26 +278,19 @@ const docTemplate = `{
                     "200": {
                         "description": "User booking history",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/booking.UserBookingsSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Database error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/booking.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/booking.ErrorResponse"
                         }
                     }
                 }
@@ -340,10 +302,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "user": {
                     "$ref": "#/definitions/auth.UserResponse"
+                }
+            }
+        },
+        "auth.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "invalid username or password"
                 }
             }
         },
@@ -359,6 +331,18 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "auth.LoginSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/auth.AuthResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "login successful"
                 }
             }
         },
@@ -383,17 +367,89 @@ const docTemplate = `{
                 }
             }
         },
+        "auth.RegisterSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/auth.UserResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user registered successfully"
+                }
+            }
+        },
         "auth.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe@example.com"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "5b676171-999a-4d62-8506-c0841707b118"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe"
+                }
+            }
+        },
+        "booking.BookingResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-09-21T11:00:00Z"
+                },
+                "event_id": {
+                    "type": "string",
+                    "example": "ae57d22b-e67e-43de-adeb-4965a6e3a334"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "2c943e11-884a-4ecb-99f1-d0831707c220"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "5b676171-999a-4d62-8506-c0841707b118"
+                }
+            }
+        },
+        "booking.BookingSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/booking.BookingResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "event booked successfully"
+                }
+            }
+        },
+        "booking.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "event is fully booked"
+                }
+            }
+        },
+        "booking.UserBookingsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/booking.BookingResponse"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user bookings retrieved successfully"
                 }
             }
         },
@@ -427,6 +483,79 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "minLength": 3
+                }
+            }
+        },
+        "events.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "event not found"
+                }
+            }
+        },
+        "events.EventResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-09-21T09:31:17Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Deep dive into goroutines, channels, and row-level locking."
+                },
+                "ends_at": {
+                    "type": "string",
+                    "example": "2026-10-01T17:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "ae57d22b-e67e-43de-adeb-4965a6e3a334"
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Jakarta Convention Center"
+                },
+                "quota": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-10-01T09:00:00Z"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Go Concurrency \u0026 Backend Masterclass"
+                }
+            }
+        },
+        "events.EventSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/events.EventResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "event retrieved successfully"
+                }
+            }
+        },
+        "events.EventsListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/events.EventResponse"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "events retrieved successfully"
                 }
             }
         }

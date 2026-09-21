@@ -22,9 +22,9 @@ func NewHandler(service Service) *Handler {
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Event UUID"
-// @Success 201 {object} map[string]interface{} "Event booked successfully"
-// @Failure 400 {object} map[string]string "Event fully booked or already booked by user"
-// @Failure 401 {object} map[string]string "Unauthorized"
+// @Success 201 {object} BookingSuccessResponse "Event booked successfully"
+// @Failure 400 {object} ErrorResponse "Event fully booked or already booked by user"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Router /events/{id}/book [post]
 func (h *Handler) Book(c *gin.Context) {
     eventID := c.Param("id")
@@ -50,9 +50,9 @@ func (h *Handler) Book(c *gin.Context) {
 // @Tags Bookings
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} map[string]interface{} "User booking history"
-// @Failure 400 {object} map[string]string "Database error"
-// @Failure 401 {object} map[string]string "Unauthorized"
+// @Success 200 {object} UserBookingsSuccessResponse "User booking history"
+// @Failure 400 {object} ErrorResponse "Database error"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Router /me/bookings [get]
 func (h *Handler) GetMyBookings(c *gin.Context) {
     userID := c.GetString("user_id")

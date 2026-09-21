@@ -79,7 +79,12 @@ func main() {
     }
 
     // 7. Swagger Documentation & Root Route
-    router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    router.GET("/swagger/*any", ginSwagger.WrapHandler(
+        swaggerFiles.Handler,
+        ginSwagger.DefaultModelsExpandDepth(-1), // Hide bottom models accordion for a clean UI
+        ginSwagger.DocExpansion("list"),         // Expand route tags neatly
+        ginSwagger.PersistAuthorization(true),   // Persist bearer token on page refresh
+    ))
     router.GET("/", func(c *gin.Context) {
         c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
     })

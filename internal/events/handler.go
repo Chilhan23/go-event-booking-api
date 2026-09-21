@@ -25,9 +25,9 @@ func NewHandler(service Service) *Handler {
 // @Produce json
 // @Security BearerAuth
 // @Param request body CreateEventRequest true "Event Details"
-// @Success 201 {object} map[string]interface{} "Event created successfully"
-// @Failure 400 {object} map[string]string "Validation error or invalid schedule"
-// @Failure 401 {object} map[string]string "Unauthorized"
+// @Success 201 {object} EventSuccessResponse "Event created successfully"
+// @Failure 400 {object} ErrorResponse "Validation error or invalid schedule"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Router /events/create [post]
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateEventRequest
@@ -58,8 +58,8 @@ func (h *Handler) Create(c *gin.Context) {
 // @Description Retrieve a list of all available events
 // @Tags Events
 // @Produce json
-// @Success 200 {object} map[string]interface{} "List of events"
-// @Failure 400 {object} map[string]string "Database error"
+// @Success 200 {object} EventsListResponse "List of events"
+// @Failure 400 {object} ErrorResponse "Database error"
 // @Router /events [get]
 func (h *Handler) GetAll(c *gin.Context) {
 	res, err := h.service.GetAllEvents(c.Request.Context())
@@ -82,8 +82,8 @@ func (h *Handler) GetAll(c *gin.Context) {
 // @Tags Events
 // @Produce json
 // @Param id path string true "Event UUID"
-// @Success 200 {object} map[string]interface{} "Event details"
-// @Failure 404 {object} map[string]string "Event not found"
+// @Success 200 {object} EventSuccessResponse "Event details"
+// @Failure 404 {object} ErrorResponse "Event not found"
 // @Router /events/{id} [get]
 func (h *Handler) GetByID(c *gin.Context) {
 	eventID := c.Param("id")
